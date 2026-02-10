@@ -40,30 +40,102 @@
 </head>
 <body>
 
-<div>
-   <h1 id="title">Happy Birthday Petni</h1>
-<p id="msg">
-  someday we will celebrate your birthday in a dark room and i will be whispering happy birthday
-</p>
+<canvas id="tree"></canvas>
 
-    <span class="cursor"></span>
+<div class="content">
+  <h1>Happy Birthday Petni</h1>
+  <p>
+    someday we will celebrate your birthday in a dark room and i will be whispering happy birthday
+  </p>
 </div>
 
 <script>
-const title = "Happy Birthday Petni";
-const message = "someday we will celebrate your birthday in a dark room and i will be whispering happy birthday";
+const canvas = document.getElementById("tree");
+const ctx = canvas.getContext("2d");
 
-let i = 0, j = 0;
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
 
-function typeTitle() {
-    if (i < title.length) {
-        document.getElementById("title").innerHTML += title[i++];
-        setTimeout(typeTitle, 100);
-    } else {
-        setTimeout(typeMessage, 700);
-    }
+ctx.translate(canvas.width / 2, canvas.height);
+
+function branch(len, angle, width) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(180,255,200,0.9)";
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  ctx.rotate(angle * Math.PI / 180);
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, -len);
+  ctx.stroke();
+  ctx.translate(0, -len);
+
+  if (len < 10) {
+    ctx.fillStyle = "rgba(255,255,180,0.9)";
+    ctx.beginPath();
+    ctx.arc(0, 0, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    return;
+  }
+
+  setTimeout(() => {
+    branch(len * 0.75, 15, width * 0.7);
+    branch(len * 0.75, -15, width * 0.7);
+  }, 80);
+
+  ctx.restore();
 }
 
-function typeMessage() {
-    if (j < message.length) {
-        document.getElementById("msg").innerHTML += message[j++];
+branch(120, 0, 10);
+
+// sparkles
+const particles = [];
+for (let i = 0; i < 60; i++) {
+  particles.push({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    r: Math.random() * 2 + 1,
+    speed: Math.random() * 0.4 + 0.2
+  });
+}
+
+function animateParticles() {
+  ctx.save();
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.fillStyle = "rgba(255,255,255,0.6)";
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fill();
+    p.y -= p.speed;
+    if (p.y < 0) p.y = window.innerHeight;
+  });
+  ctx.restore();
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+</script>
+
+<style>
+canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+.content {
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+</style>
+
+</body>
+</html>
